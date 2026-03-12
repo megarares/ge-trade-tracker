@@ -24,7 +24,7 @@ import java.util.concurrent.*;
 @Slf4j
 @PluginDescriptor(
 	name = "GE Trade Tracker",
-	description = "Sends Grand Exchange buy/sell offer data to a configured server",
+	description = "Sends Grand Exchange buy/sell offer data to the GE Trade Tracker API",
 	tags = {"grand exchange", "trading", "ge", "tracker"}
 )
 public class GETradeTrackerPlugin extends Plugin
@@ -32,6 +32,8 @@ public class GETradeTrackerPlugin extends Plugin
 	private static final MediaType JSON_MEDIA_TYPE = MediaType.get("application/json; charset=utf-8");
 	private static final long LOGIN_COOLDOWN_MS = 3_000;
 	private static final long DEBOUNCE_DELAY_MS = 200;
+	private static final String LIVE_API_URL = "https://api.example.com/ge";
+	private static final String SERVER_URL_OVERRIDE_PROPERTY = "geTradeTracker.serverUrl";
 
 	@Inject
 	private Client client;
@@ -96,7 +98,7 @@ public class GETradeTrackerPlugin extends Plugin
 			return;
 		}
 
-		if (config.serverUrl().isEmpty() || config.apiToken().isEmpty())
+		if (config.apiToken().isEmpty())
 		{
 			return;
 		}
@@ -161,6 +163,7 @@ public class GETradeTrackerPlugin extends Plugin
 		payload.put("offers", offerList);
 
 		String jsonPayload = gson.toJson(payload);
+		String serverUrl = getServerUrl();
 
 		// Skip if payload is identical to last sent
 		if (jsonPayload.equals(lastSentPayload))
@@ -172,7 +175,7 @@ public class GETradeTrackerPlugin extends Plugin
 
 		RequestBody body = RequestBody.create(JSON_MEDIA_TYPE, jsonPayload);
 		Request request = new Request.Builder()
-			.url(config.serverUrl())
+			.url(serverUrl)
 			.post(body)
 			.addHeader("Authorization", "Bearer " + config.apiToken())
 			.addHeader("Content-Type", "application/json")
@@ -207,6 +210,17 @@ public class GETradeTrackerPlugin extends Plugin
 				}
 			}
 		});
+	}
+
+	private String getServerUrl()
+	{
+		String overrideUrl = System.getProperty(SERVER_URL_OVERRIDE_PROPERTY);
+		if (overrideUrl != null && !overrideUrl.trim().isEmpty())
+		{
+			return overrideUrl.trim();
+		}
+
+		return LIVE_API_URL;
 	}
 
 	@Provides
