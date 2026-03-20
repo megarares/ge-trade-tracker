@@ -11,4 +11,4 @@ GE Trade Tracker is a RuneLite plugin that captures your Grand Exchange offer sn
 
 ## Project
 
-Learn more about the project at [MegaRares](https://www.megarares.com).
+Learn more about the project at [Megarares](https://www.megarares.com).
