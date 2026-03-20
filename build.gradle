@@ -40,7 +40,7 @@ tasks.register('run', JavaExec) {
 	mainClass = pluginMainClass
 
 	jvmArgs "-ea",
-		"-DgeTradeTracker.serverUrl=http://localhost:3000/ge",
+		"-DgeTradeTracker.serverUrl=https://api.megarares.com/trades/track",
 		"--add-opens", "java.desktop/com.apple.eawt=ALL-UNNAMED"
 	args "--developer-mode", "--debug"
 }

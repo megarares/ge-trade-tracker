@@ -81,11 +81,14 @@ public class GETradeTrackerPlugin extends Plugin
 		{
 			loggedIn = true;
 			loginTime = System.currentTimeMillis();
+			cancelPendingSend();
+			pendingSend = scheduler.schedule(this::sendOffers, LOGIN_COOLDOWN_MS, TimeUnit.MILLISECONDS);
 			log.debug("Logged in - GE tracking enabled (cooldown started)");
 		}
 		else if (event.getGameState() == GameState.LOGIN_SCREEN || event.getGameState() == GameState.HOPPING)
 		{
 			loggedIn = false;
+			cancelPendingSend();
 			log.debug("Logged out - GE tracking disabled");
 		}
 	}
@@ -112,15 +115,24 @@ public class GETradeTrackerPlugin extends Plugin
 		}
 
 		// Debounce rapid events
-		if (pendingSend != null && !pendingSend.isDone())
-		{
-			pendingSend.cancel(false);
-		}
+		cancelPendingSend();
 		pendingSend = scheduler.schedule(this::sendOffers, DEBOUNCE_DELAY_MS, TimeUnit.MILLISECONDS);
 	}
 
 	private void sendOffers()
 	{
+		if (!loggedIn)
+		{
+			log.debug("Skipping snapshot send while logged out");
+			return;
+		}
+
+		if (config.apiToken().isEmpty())
+		{
+			log.debug("Skipping snapshot send because API token is not configured");
+			return;
+		}
+
 		Player localPlayer = client.getLocalPlayer();
 		if (client == null || client.getGrandExchangeOffers() == null || localPlayer == null)
 		{
@@ -177,7 +189,7 @@ public class GETradeTrackerPlugin extends Plugin
 		Request request = new Request.Builder()
 			.url(serverUrl)
 			.post(body)
-			.addHeader("Authorization", "Bearer " + config.apiToken())
+			.addHeader("X-API-Key", config.apiToken())
 			.addHeader("Content-Type", "application/json")
 			.build();
 
@@ -221,6 +233,14 @@ public class GETradeTrackerPlugin extends Plugin
 		}
 
 		return LIVE_API_URL;
+	}
+
+	private void cancelPendingSend()
+	{
+		if (pendingSend != null && !pendingSend.isDone())
+		{
+			pendingSend.cancel(false);
+		}
 	}
 
 	@Provides
