@@ -52,5 +52,5 @@
 		<appender-ref ref="STDOUT"/>
 		<appender-ref ref="FILE"/>
 	</root>
-	<logger name="com.megarares" level="DEBUG" />
+	<logger name="com.getradetracker" level="DEBUG" />
 </configuration>

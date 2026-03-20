@@ -32,7 +32,7 @@ public class GETradeTrackerPlugin extends Plugin
 	private static final MediaType JSON_MEDIA_TYPE = MediaType.get("application/json; charset=utf-8");
 	private static final long LOGIN_COOLDOWN_MS = 3_000;
 	private static final long DEBOUNCE_DELAY_MS = 200;
-	private static final String LIVE_API_URL = "https://api.example.com/ge";
+	private static final String LIVE_API_URL = "https://api.megarares.com/trades/track";
 	private static final String SERVER_URL_OVERRIDE_PROPERTY = "geTradeTracker.serverUrl";
 
 	@Inject
